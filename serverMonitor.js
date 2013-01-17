@@ -1,4 +1,4 @@
-function doUptime(upSeconds) {
+function doUptime() {
     var uptimeString = "";
     var secs  = parseInt(upSeconds % 60);
     var mins  = parseInt(upSeconds / 60 % 60);
@@ -25,7 +25,7 @@ function doUptime(upSeconds) {
 
     upSeconds++;
 
-    setTimeout("doUptime("+upSeconds+")",1000);
+    setTimeout("doUptime()", 1000);
 }
 
 $(function () {
@@ -41,9 +41,9 @@ $(function () {
     var grid    = $('#serverStatus');
     var myColor = false;
     var myName  = false;
-    var isAlive	= true;
-	var isFirst = true;
-
+    var isAlive = true;
+    var isFirst = true;
+    var upSeconds = 0;
     var colors = Highcharts.getOptions().colors,
         categories = ['RAM'],
         name = 'RAM',
@@ -104,65 +104,65 @@ $(function () {
         }]
     });
 
-	chart2 = new Highcharts.Chart({
-		chart: {
-			renderTo: 'netGraph',
-			type: 'spline',
-			backgroundColor: '#EEEEEE',
-			width:  210,
-			height: 170,
-			spacingBottom: 40,
-			spacingLeft:   0,
-			spacingRight:  0,
-			spacingTop:    10,
-		},
-		title: {
-			text: ''
-		},
-		xAxis: {
-			type: 'datetime',
-			tickPixelInterval: 150,
-			labels: {enabled:false},
-		},
-		yAxis: {
-			title: { text: '' },
-			labels: {enabled:false},
-			plotLines: [{ value: 0, width: 1, color: '#808080'}] },
-		tooltip: { formatter: function() {
+    chart2 = new Highcharts.Chart({
+        chart: {
+            renderTo: 'netGraph',
+            type: 'spline',
+            backgroundColor: '#EEEEEE',
+            width:  210,
+            height: 170,
+            spacingBottom: 40,
+            spacingLeft:   0,
+            spacingRight:  0,
+            spacingTop:    10,
+        },
+        title: {
+            text: ''
+        },
+        xAxis: {
+            type: 'datetime',
+            tickPixelInterval: 150,
+            labels: {enabled:false},
+        },
+        yAxis: {
+            title: { text: '' },
+            labels: {enabled:false},
+            plotLines: [{ value: 0, width: 1, color: '#808080'}] },
+        tooltip: { formatter: function() {
             return '<b>' + this.series.name + '</b><br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' + Highcharts.numberFormat(this.y, 2) + "kb/s";
         }},
-		legend: { enabled: false },
-		exporting: { enabled: false },
-		credits:{enabled:false},
-		series: [{
-			name: 'Recived',
-			dataLabels: { enabled:false },
-			color: '#86DBCF',
-			data: (function() {
-				var data = [], time = (new Date()).getTime(), i;
+        legend: { enabled: false },
+        exporting: { enabled: false },
+        credits:{enabled:false},
+        series: [{
+            name: 'Recived',
+            dataLabels: { enabled:false },
+            color: '#86DBCF',
+            data: (function() {
+                var data = [], time = (new Date()).getTime(), i;
 
-				for (i = -10; i <= 0; i++) {
-					data.push({
-						x: time + i * 1000,
-						y: 0
-					});
-				}
-				return data;
-			})()},{
-			name: 'Transmitted',
-			labels: { enabled:false },
-			color: '#B09DC6',
-			data: (function() {
-				var data = [], time = (new Date()).getTime(), i;
-				for (i = -10; i <= 0; i++) {
-					data.push({
-						x: time + i * 1000,
-						y: 0
-					});
-				}
-				return data;
-			})()}]
-	});
+                for (i = -10; i <= 0; i++) {
+                    data.push({
+                        x: time + i * 1000,
+                        y: 0
+                    });
+                }
+                return data;
+            })()},{
+            name: 'Transmitted',
+            labels: { enabled:false },
+            color: '#B09DC6',
+            data: (function() {
+                var data = [], time = (new Date()).getTime(), i;
+                for (i = -10; i <= 0; i++) {
+                    data.push({
+                        x: time + i * 1000,
+                        y: 0
+                    });
+                }
+                return data;
+            })()}]
+    });
 
     window.WebSocket = window.WebSocket || window.MozWebSocket;
 
@@ -171,7 +171,7 @@ $(function () {
         return;
     }
 
-    var connection = new WebSocket('ws://92.243.17.170:1337');
+    var connection = new WebSocket('ws://92.243.17.170:2468');
 
     connection.onopen = function () {
         status.text('Connected');
@@ -225,72 +225,75 @@ $(function () {
             chart2.series[0].addPoint([x, rx], false, true);
             chart2.series[1].addPoint([x, tx], true, true);
 
-			$('#driveList').find('tbody').empty();
-			$.each(json.data[0].drives, function(key, value) {
-				$('#driveList').find('tbody').append(
-					$('<tr>').append(
-						$('<td>').html( $.trim(value.mount) ).width('40%')
-					).append(
-						$('<td>').append(
-							$('<div>').addClass('progress progress-info progress-striped').append(
-								$('<div>').addClass('bar').width(value.percent)
-							)
-						)
-					)
-				)
-			});
+            $('#driveList').find('tbody').empty();
+            $.each(json.data[0].drives, function(key, value) {
+                $('#driveList').find('tbody').append(
+                    $('<tr>').append(
+                        $('<td>').html( $.trim(value.mount) ).width('40%')
+                    ).append(
+                        $('<td>').append(
+                            $('<div>').addClass('progress progress-info progress-striped').append(
+                                $('<div>').addClass('bar').width(value.percent)
+                            )
+                        )
+                    )
+                )
+            });
 
-			$('#portScan').find('tbody').empty();
-			$.each(json.data[0].ports, function(key, value) {
-				var response = "";
+            $('#portScan').find('tbody').empty();
+            $.each(json.data[0].ports, function(key, value) {
+                var response = "";
 
-				if (value[2] === true) {
-					response = $('<span>').addClass('label label-success').html('Up');
-				} else {
-					response = $('<span>').addClass('label label-important').html('Down');
-				}
+                if (value[2] === true) {
+                    response = $('<span>').addClass('label label-success').html('Up');
+                } else {
+                    response = $('<span>').addClass('label label-important').html('Down');
+                }
 
-				$('#portScan').find('tbody').append(
-					$('<tr>').append(
-						$('<td>').html(value[0])
-					).append(
-						$('<td>').html(response)
-					)
-				)
+                $('#portScan').find('tbody').append(
+                    $('<tr>').append(
+                        $('<td>').html(value[0])
+                    ).append(
+                        $('<td>').html(response)
+                    )
+                )
 
-			});
+            });
 
 
 
-			if (isFirst == true) {
-				grid.slideDown('slow');
-				isFirst == false;
-			}
+            if (isFirst == true) {
+                grid.slideDown('slow');
+                isFirst == false;
+            }
 
         } else if (json.type === 'uptime') {
-            doUptime(json.data);
+            upSeconds = json.data;
+
+            // Start the uptime counter
+            doUptime();
         } else if (json.type === 'error') {
             grid.hide('slow');
             status.text(json.data);
-			isAlive = false;
+            isAlive = false;
         } else {
             console.log('Hmm..., I\'ve never seen JSON like this: ', json);
         }
     };
 
 
-	setInterval(function() {
-		if (connection.readyState === 1) {
-			connection.send('ping');
-		}
-	}, 5000);
+    setInterval(function() {
+        if (connection.readyState === 1) {
+            connection.send('ping');
+        }
+    }, 5000);
 
 
     setInterval(function() {
         if (connection.readyState !== 1 && isAlive === true) {
             status.text('Unable to interact with the server.');
             grid.slideUp('slow');
-			isAlive = false;
+            isAlive = false;
         }
     }, 3000);
 
