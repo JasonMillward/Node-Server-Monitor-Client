@@ -1,33 +1,3 @@
-function doUptime() {
-    var uptimeString = "";
-    var secs  = parseInt(upSeconds % 60);
-    var mins  = parseInt(upSeconds / 60 % 60);
-    var hours = parseInt(upSeconds / 3600 % 24);
-    var days  = parseInt(upSeconds / 86400);
-
-    $('#day').text(days);
-    $('#days-label').text(((days == 1) ? "Day" : "Days"));
-
-    if (hours > 0) {
-        uptimeString += hours;
-        uptimeString += ((hours == 1) ? " Hour" : " Hours");
-    }
-    if (mins > 0) {
-        uptimeString += ((hours > 0) ? ", " : "") + mins;
-        uptimeString += ((mins == 1) ? " Minute" : " Minutes");
-    }
-    if (secs > 0) {
-        uptimeString += ((days > 0 || hours > 0 || mins > 0) ? ", " : "") + secs;
-        uptimeString += ((secs == 1) ? " Second" : " Seconds");
-    }
-
-    $('#uptime').text(uptimeString);
-
-    upSeconds++;
-
-    setTimeout("doUptime()", 1000);
-}
-
 $(function () {
     "use strict";
 
@@ -260,18 +230,13 @@ $(function () {
 
             });
 
-
-
             if (isFirst == true) {
                 grid.slideDown('slow');
-                isFirst == false;
+                isFirst = false;
             }
 
         } else if (json.type === 'uptime') {
             upSeconds = json.data;
-
-            // Start the uptime counter
-            doUptime();
         } else if (json.type === 'error') {
             grid.hide('slow');
             status.text(json.data);
@@ -280,7 +245,6 @@ $(function () {
             console.log('Hmm..., I\'ve never seen JSON like this: ', json);
         }
     };
-
 
     setInterval(function() {
         if (connection.readyState === 1) {
@@ -297,5 +261,31 @@ $(function () {
         }
     }, 3000);
 
+    setInterval(function() {
+        var uptimeString = "";
+        var secs  = parseInt(upSeconds % 60);
+        var mins  = parseInt(upSeconds / 60 % 60);
+        var hours = parseInt(upSeconds / 3600 % 24);
+        var days  = parseInt(upSeconds / 86400);
 
+        $('#day').text(days);
+        $('#days-label').text(((days == 1) ? "Day" : "Days"));
+
+        if (hours > 0) {
+            uptimeString += hours;
+            uptimeString += ((hours == 1) ? " Hour" : " Hours");
+        }
+        if (mins > 0) {
+            uptimeString += ((hours > 0) ? ", " : "") + mins;
+            uptimeString += ((mins == 1) ? " Minute" : " Minutes");
+        }
+        if (secs > 0) {
+            uptimeString += ((days > 0 || hours > 0 || mins > 0) ? ", " : "") + secs;
+            uptimeString += ((secs == 1) ? " Second" : " Seconds");
+        }
+
+        $('#uptime').text(uptimeString);
+
+        upSeconds++;
+    }, 1000)
 });
