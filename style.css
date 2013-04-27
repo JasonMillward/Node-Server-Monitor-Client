@@ -194,7 +194,8 @@ pre {
   color: #858585;
 }
 .statusGraphBox {
-  padding-top: 0px;
+  padding-top: 0;
+  height: 170px;
 }
 .statusTime {
   padding: 10px 20px 11px;
@@ -248,7 +249,7 @@ pre {
   font-size: 12px;
 }
 .driveMount {
-  padding-left: 20px;
+  padding-left: 20px !important;
 }
 .form-actions {
   background-color: transparent !important;
