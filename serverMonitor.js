@@ -22,7 +22,7 @@ $(function () {
                 color: colors[2],
                 drilldown: {
                     name: 'Physical Ram',
-                    categories: ['Used', 'Free',],
+                    categories: ['Used', 'Free'],
                     data: [190950, 566500]
                 }
         }];
@@ -44,12 +44,12 @@ $(function () {
             renderTo: 'memGraph',
             type: 'pie',
             backgroundColor: '#EEEEEE',
-            width: 200,
-            height: 170,
-            spacingBottom: 16,
-            spacingLeft:   0,
+            width: 190,
+            height: 150,
+            spacingBottom: 5,
+            spacingLeft:   15,
             spacingRight:  0,
-            spacingTop:    -12
+            spacingTop:    -5
         },
         title: {text: ''},
         yAxis: {title: {text: ''}},
@@ -84,7 +84,7 @@ $(function () {
             spacingBottom: 40,
             spacingLeft:   0,
             spacingRight:  0,
-            spacingTop:    10,
+            spacingTop:    10
         },
         title: {
             text: ''
@@ -92,7 +92,7 @@ $(function () {
         xAxis: {
             type: 'datetime',
             tickPixelInterval: 150,
-            labels: {enabled:false},
+            labels: {enabled:false}
         },
         yAxis: {
             title: { text: '' },
@@ -154,9 +154,10 @@ $(function () {
     };
 
     connection.onmessage = function (message) {
+        var json;
 
         try {
-            var json = JSON.parse(message.data);
+            json = JSON.parse(message.data);
         } catch (e) {
             console.log('This doesn\'t look like a valid JSON: ', message.data);
             return;
@@ -179,8 +180,8 @@ $(function () {
             /**
              * Memory Usage HTML
              */
-            var used = parseInt(json.data[0].total - json.data[0].free);
-            var free = parseInt(json.data[0].free);
+            var used = parseInt(json.data[0].total - json.data[0].free, 10);
+            var free = parseInt(json.data[0].free, 10);
 
             chart.series[0].data[0].update(['Used', used], true, true);
             chart.series[0].data[1].update(['Free', free], true, true);
@@ -197,17 +198,19 @@ $(function () {
 
             $('#driveList').find('tbody').empty();
             $.each(json.data[0].drives, function(key, value) {
-                $('#driveList').find('tbody').append(
-                    $('<tr>').append(
-                        $('<td>').html( $.trim(value.mount) ).width('40%')
-                    ).append(
-                        $('<td>').append(
-                            $('<div>').addClass('progress progress-info progress-striped').append(
-                                $('<div>').addClass('bar').width(value.percent)
+                if(typeof value.mount !== "undefined") {
+                    $('#driveList').find('tbody').append(
+                        $('<tr>').append(
+                            $('<td>').html( $.trim(value.mount) ).width('40%').addClass("driveMount")
+                        ).append(
+                            $('<td>').append(
+                                $('<div>').addClass('progress progress-info progress-striped').append(
+                                    $('<div>').addClass('bar').width(value.percent)
+                                )
                             )
                         )
-                    )
-                )
+                    );
+                }
             });
 
             $('#portScan').find('tbody').empty();
@@ -226,11 +229,11 @@ $(function () {
                     ).append(
                         $('<td>').html(response)
                     )
-                )
+                );
 
             });
 
-            if (isFirst == true) {
+            if (isFirst === true) {
                 grid.slideDown('slow');
                 isFirst = false;
             }
@@ -263,10 +266,10 @@ $(function () {
 
     setInterval(function() {
         var uptimeString = "";
-        var secs  = parseInt(upSeconds % 60);
-        var mins  = parseInt(upSeconds / 60 % 60);
-        var hours = parseInt(upSeconds / 3600 % 24);
-        var days  = parseInt(upSeconds / 86400);
+        var secs  = parseInt(upSeconds % 60, 10);
+        var mins  = parseInt(upSeconds / 60 % 60, 10);
+        var hours = parseInt(upSeconds / 3600 % 24, 10);
+        var days  = parseInt(upSeconds / 86400, 10);
 
         $('#day').text(days);
         $('#days-label').text(((days == 1) ? "Day" : "Days"));
@@ -275,10 +278,12 @@ $(function () {
             uptimeString += hours;
             uptimeString += ((hours == 1) ? " Hour" : " Hours");
         }
+
         if (mins > 0) {
             uptimeString += ((hours > 0) ? ", " : "") + mins;
             uptimeString += ((mins == 1) ? " Minute" : " Minutes");
         }
+
         if (secs > 0) {
             uptimeString += ((days > 0 || hours > 0 || mins > 0) ? ", " : "") + secs;
             uptimeString += ((secs == 1) ? " Second" : " Seconds");
@@ -287,5 +292,5 @@ $(function () {
         $('#uptime').text(uptimeString);
 
         upSeconds++;
-    }, 1000)
+    }, 1000);
 });
