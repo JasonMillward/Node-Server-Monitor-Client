@@ -67,7 +67,7 @@ $(function () {
         series: [{
             name: 'Versions',
             data: versionsData,
-            innerSize: '40%',
+            innerSize: '70%',
             dataLabels: {
                 enabled:false
             }
